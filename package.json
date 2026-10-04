@@ -1,0 +1,17 @@
+{
+  "name": "unscroll",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "UNSCROLL — turn screen time into focused practice, powered by deepseek/deepseek-v4.1-flash on OpenRouter.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node scripts/build.mjs && node scripts/dev.mjs",
+    "start": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/plan.test.mjs tests/interface.test.mjs tests/provider.test.mjs",
+    "test:live": "node tests/live.mjs"
+  }
+}

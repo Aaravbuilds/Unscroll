@@ -1,0 +1,10 @@
+node_modules/
+dist/server/
+.env
+.env.local
+.sites-runtime/
+.wrangler/
+.dev.vars
+*.log
+.DS_Store
+Thumbs.db
