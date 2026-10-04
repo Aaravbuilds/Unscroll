@@ -1,3 +1,10 @@
-import {readFile,mkdir,writeFile} from 'node:fs/promises';
-const assets={};for(const [file,mime] of [['index.html','text/html; charset=utf-8'],['app.js','text/javascript; charset=utf-8'],['data.js','text/javascript; charset=utf-8'],['style.css','text/css; charset=utf-8']])assets['/'+file]={body:await readFile('web/'+file,'utf8'),mime};
-const server=await readFile('server/index.js','utf8');await mkdir('dist/server',{recursive:true});await writeFile('dist/server/index.js','const ASSETS='+JSON.stringify(assets)+';\n'+server);console.log('Built server with embedded public assets; no runtime secrets bundled.');
+import {readFile,mkdir,writeFile,rm} from 'node:fs/promises';
+const FILES=[['index.html','text/html; charset=utf-8'],['app.js','text/javascript; charset=utf-8'],['data.js','text/javascript; charset=utf-8'],['style.css','text/css; charset=utf-8']];
+const assets={};for(const [file,mime] of FILES)assets['/'+file]={body:await readFile('web/'+file,'utf8'),mime};
+const server=await readFile('server/index.js','utf8');
+await mkdir('dist/server',{recursive:true});
+await writeFile('dist/server/index.js','const ASSETS='+JSON.stringify(assets)+';\n'+server);
+await rm('public',{recursive:true,force:true});
+await mkdir('public',{recursive:true});
+for(const [file] of FILES)await writeFile('public/'+file,assets['/'+file].body);
+console.log('Built dist/server/index.js (Worker bundle) and public/ (static output for Vercel). No runtime secrets bundled.');

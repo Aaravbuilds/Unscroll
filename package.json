@@ -11,7 +11,7 @@
     "dev": "node scripts/build.mjs && node scripts/dev.mjs",
     "start": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/plan.test.mjs tests/interface.test.mjs tests/provider.test.mjs",
+    "test": "node --test tests/plan.test.mjs tests/interface.test.mjs tests/provider.test.mjs tests/vercel.test.mjs",
     "test:live": "node tests/live.mjs"
   }
 }

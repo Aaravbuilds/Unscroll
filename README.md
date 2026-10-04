@@ -15,9 +15,16 @@ npm run dev               # http://localhost:8787
 
 - `npm run dev`: build, then serve locally on `PORT` (default 8787) with `.env` loaded.
 - `npm start`: serve the existing `dist/server/index.js` without rebuilding.
-- `npm run build`: embeds public files from `web/` into the Worker at `dist/server/index.js`.
-- `npm test`: request boundaries, plan validation, allocation arithmetic, resource allowlisting, escaping, continuity, and the OpenRouter request contract.
+- `npm run build`: writes `dist/server/index.js` (Worker bundle with `web/` embedded) and `public/` (static output Vercel serves).
+- `npm test`: request boundaries, plan validation, allocation arithmetic, resource allowlisting, escaping, continuity, the OpenRouter request contract, and the Vercel function adapter.
 - `node tests/live.mjs`: optional live-provider scenarios. Reads `OPENROUTER_API_KEY` from the environment. `FULL_TEST=1` runs the full topic/time matrix, `REMAINING=1` the short one. Never put a key in source.
+
+## Deployment targets
+
+- **Vercel**: `vercel.json` sets `outputDirectory: public`; `api/plan.js` handles `POST /api/plan`. Add `OPENROUTER_API_KEY` in the dashboard — `.env` is gitignored and never reaches Vercel.
+- **Cloudflare Workers**: `wrangler.toml` points at `dist/server/index.js`; `wrangler secret put OPENROUTER_API_KEY`.
+
+`api/plan.js` imports the same `server/index.js` handler the Worker uses, so there is one copy of the planning logic across all three targets.
 
 ## Runtime
 

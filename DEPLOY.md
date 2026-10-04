@@ -1,8 +1,13 @@
-# UNSCROLL — run it locally, then push it to GitHub
+# UNSCROLL — run it locally, deploy it to Vercel, keep the source on GitHub
 
 UNSCROLL is a Cloudflare-Worker-shaped app: `server/index.js` exports a `fetch(request, env)`
-handler and `web/` holds the frontend that gets embedded into it at build time. You can run the
-whole thing on your own machine with Node — **Cloudflare is not required.**
+handler and `web/` holds the frontend. It runs three ways from one codebase:
+
+| Target | How | Needs |
+| --- | --- | --- |
+| Local machine | `npm run dev` | Node only |
+| Vercel | `vercel.json` + `api/plan.js` + `public/` | A Vercel account, `OPENROUTER_API_KEY` in env |
+| Cloudflare Workers | `wrangler.toml` + `dist/server/index.js` | A Cloudflare account |
 
 ## DeepSeek: there is nothing to install
 
@@ -78,9 +83,40 @@ git remote add origin https://github.com/<you>/<repo>.git
 git push -u origin main
 ```
 
-`dist/server/`, `.env`, `.wrangler/` and `node_modules/` are ignored, so no key or generated
-bundle is ever pushed. If the repository is private and you use a personal access token, Git
-Credential Manager will prompt for it on the first push.
+`dist/server/index.js`, `.env`, `public/`, `.wrangler/` and `node_modules/` are ignored, so no
+key or generated file is ever pushed. If the repository is private and you use a personal access
+token, Git Credential Manager will prompt for it on the first push.
+
+## Deploy to Vercel
+
+Vercel needs two things this repo now produces: a **static output directory** (`public/`) and a
+**serverless function** (`api/plan.js`) for the OpenRouter call. `vercel.json` wires both up.
+
+1. Import the repo at https://vercel.com/new → pick `Aaravbuilds/Unscroll`. Framework Preset
+   stays on **Other**; `vercel.json` supplies the output directory.
+
+2. Add the secret: **Project → Settings → Environment Variables**
+
+   | Name | Value | Environments |
+   | --- | --- | --- |
+   | `OPENROUTER_API_KEY` | `sk-or-v1-…` | Production, Preview, Development |
+   | `OPENROUTER_MODEL` | `deepseek/deepseek-v4.1-flash` | optional, this is the default |
+
+   `.env` is gitignored, so the key you use locally does **not** reach Vercel. Without this
+   variable the app loads and `/api/plan` answers `503` by design.
+
+3. Deploy. `npm run build` runs on Vercel and regenerates both `public/` and
+   `dist/server/index.js`.
+
+Notes:
+
+- `api/plan.js` imports `server/index.js` and delegates to the same `fetch` handler the Worker
+  uses. There is no second copy of the planning logic, so the two deployments cannot drift.
+- `maxDuration: 60` is within Hobby's 300s Fluid Compute limit, and real generations take 8–10s.
+- Vercel functions are stateless, so the in-memory per-IP limiter is per-instance and not a
+  global cap. Bound spend with OpenRouter-side limits.
+- The `Content-Security-Policy` in `vercel.json` is byte-identical to the one the Worker sends.
+  If you ever change one, change both.
 
 ## Optional: live provider run
 
